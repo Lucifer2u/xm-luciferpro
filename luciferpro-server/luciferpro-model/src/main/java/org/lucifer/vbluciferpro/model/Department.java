@@ -1,10 +1,11 @@
 package org.lucifer.vbluciferpro.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Department {
+public class Department implements Serializable {
     private Integer id;
 
     private String name;

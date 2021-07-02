@@ -3,6 +3,10 @@ package org.lucifer.vbluciferpro.service;
 import org.lucifer.vbluciferpro.mapper.EmployeeMapper;
 import org.lucifer.vbluciferpro.model.Employee;
 import org.lucifer.vbluciferpro.model.RespPageBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +18,14 @@ import java.util.List;
 @Service
 public class EmployeeService {
 
+    public final static Logger logger = LoggerFactory.getLogger(EmployeeService.class);
+
+
     @Autowired
     EmployeeMapper employeeMapper;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
     SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
@@ -41,7 +51,14 @@ public class EmployeeService {
         double month = (Double.parseDouble(yearFormat.format(endContract)) - Double.parseDouble(yearFormat.format(beginContract))) * 12
                 + (Double.parseDouble(monthFormat.format(endContract)) - Double.parseDouble(monthFormat.format(beginContract)));
         employee.setContractTerm(Double.parseDouble(decimalFormat.format(month / 12)));
-        return employeeMapper.insertSelective(employee);
+        //邮件发送
+        int result = employeeMapper.insertSelective(employee);
+        if (result == 1) {
+            Employee emp = employeeMapper.getEmployeeById(employee.getId());
+            logger.info(emp.toString());
+            rabbitTemplate.convertAndSend("lucifer.mail.welcome", emp);
+        }
+            return result;
     }
 
     public Integer deleteEmpByEid(Integer id) {

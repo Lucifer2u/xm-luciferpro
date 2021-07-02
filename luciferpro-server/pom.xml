@@ -15,6 +15,7 @@
         <module>luciferpro-mapper</module>
         <module>luciferpro-model</module>
         <module>luciferpro-service</module>
+        <module>luciferpro-web</module>
     </modules>
 
     <properties>
