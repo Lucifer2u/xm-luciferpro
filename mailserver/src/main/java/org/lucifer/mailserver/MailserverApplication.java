@@ -6,6 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 
+/**
+ * @author lucifer
+ */
 @SpringBootApplication
 public class MailserverApplication {
 
