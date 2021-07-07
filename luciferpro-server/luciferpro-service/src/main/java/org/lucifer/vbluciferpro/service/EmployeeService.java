@@ -44,6 +44,22 @@ public class EmployeeService {
         return bean;
     }
 
+    public RespPageBean getEmployeeByPageWithSalary(Integer page, Integer size) {
+        if (page != null && size != null) {
+            page = (page - 1) * size;
+        }
+        List<Employee> list = employeeMapper.getEmployeeByPageWithSalary(page, size);
+        RespPageBean respPageBean = new RespPageBean();
+        respPageBean.setData(list);
+        respPageBean.setTotal(employeeMapper.getTotal(null, null));
+        return respPageBean;
+    }
+
+    public Integer updateEmployeeSalaryById(Integer eid, Integer sid) {
+        return employeeMapper.updateEmployeeSalaryById(eid, sid);
+    }
+
+
     public Integer addEmp(Employee employee) {
 
         Date beginContract = employee.getBeginContract();
