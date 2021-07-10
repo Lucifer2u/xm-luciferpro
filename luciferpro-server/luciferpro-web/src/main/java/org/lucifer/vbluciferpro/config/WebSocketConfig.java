@@ -18,7 +18,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/ep")
                 //允许前端发送
-                .setAllowedOrigins("*")
+                .setAllowedOrigins("http://localhost:8080")
                 .withSockJS();
     }
 
