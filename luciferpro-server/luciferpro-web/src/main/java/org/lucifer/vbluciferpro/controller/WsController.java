@@ -18,8 +18,10 @@ public class WsController {
     SimpMessagingTemplate simpMessagingTemplate;
 
     @MessageMapping("/ws/chat")
-    public void handleMsg(Principal principal, ChatMsg chatMsg) {
-        chatMsg.setFrom(principal.getName());
+    public void handleMsg(Authentication authentication, ChatMsg chatMsg) {
+        Hr hr = (Hr) authentication.getPrincipal();
+        chatMsg.setFrom(hr.getUsername());
+        chatMsg.setFromNickname(hr.getName());
         chatMsg.setDate(new Date());
         simpMessagingTemplate.convertAndSendToUser(chatMsg.getTo(), "/queue/chat", chatMsg);
     }
