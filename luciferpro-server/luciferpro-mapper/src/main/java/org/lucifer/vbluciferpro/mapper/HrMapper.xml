@@ -26,6 +26,12 @@
     id, name, phone, telephone, address, enabled, username, password, userface, remark
   </sql>
 
+
+  <update id="updatePasswd">
+    update hr set password = #{encodePass} where id=#{hrid};
+  </update>
+
+
   <select id="getAllHrsExceptCurrentHr" resultMap="BaseResultMap">
     select * from hr where id !=#{id};
   </select>
