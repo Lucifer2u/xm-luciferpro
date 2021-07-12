@@ -1,5 +1,6 @@
 package org.lucifer.vbluciferpro.controller;
 
+import org.lucifer.vbluciferpro.config.FastDFSUtils;
 import org.lucifer.vbluciferpro.model.Hr;
 import org.lucifer.vbluciferpro.model.RespBean;
 import org.lucifer.vbluciferpro.service.HrService;
@@ -19,6 +20,9 @@ public class HrInfoController {
 
     @Autowired
     HrService hrService;
+
+    @Value("${fastdfs.nginx.host}")
+    String nginxHost;
 
 
     @GetMapping("/hr/info")
@@ -42,6 +46,19 @@ public class HrInfoController {
         Integer hrid = (Integer) info.get("hrid");
         if (hrService.updateHrPasswd(oldpass, pass, hrid)) {
             return RespBean.ok("更新成功!");
+        }
+        return RespBean.error("更新失败!");
+    }
+
+    @PostMapping("/hr/userface")
+    public RespBean updateHrUserface(MultipartFile file, Integer id,Authentication authentication) {
+        String fileId = FastDFSUtils.upload(file);
+        String url = nginxHost + fileId;
+        if (hrService.updateUserface(url, id) == 1) {
+            Hr hr = (Hr) authentication.getPrincipal();
+            hr.setUserface(url);
+            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(hr, authentication.getCredentials(), authentication.getAuthorities()));
+            return RespBean.ok("更新成功!", url);
         }
         return RespBean.error("更新失败!");
     }
