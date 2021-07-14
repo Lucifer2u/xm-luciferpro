@@ -1,6 +1,7 @@
 package org.lucifer.mailserver.receiver;
 
 import org.lucifer.vbluciferpro.model.Employee;
+import org.lucifer.vbluciferpro.model.MailConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -29,7 +30,7 @@ public class MailReceiver {
     TemplateEngine templateEngine;
 
 
-    @RabbitListener(queues =  "lucifer.mail.welcome")
+    @RabbitListener(queues = MailConstants.MAIL_QUEUE_NAME)
     public void handler(Employee employee){
         logger.info(employee.toString());
         //收到消息，发送邮件

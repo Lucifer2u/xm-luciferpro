@@ -109,4 +109,10 @@ public class EmployeeService {
     public Integer addEmps(List<Employee> list) {
         return employeeMapper.addEmps(list);
     }
+
+
+    public Employee getEmployeeById(Integer empId) {
+        return employeeMapper.getEmployeeById(empId);
+    }
+
 }

@@ -10,4 +10,13 @@
         insert into mail_send_log (msgId,empId,routeKey,exchange,tryTime,createTime) values (#{msgId},#{empId},#{routeKey},#{exchange},#{tryTime},#{createTime});
     </insert>
 
+    <select id="getMailSendLogsByStatus" resultType="org.lucifer.vbluciferpro.model.MailSendLog">
+        # 尝试的时间小于当前时间，需要重新处理
+        select * from mail_send_log where status=0 and tryTime &lt; sysdate()
+    </select>
+
+    <update id="updateCount">
+        update mail_send_log set count=count+1,updateTime=#{date} where msgId=#{msgId};
+    </update>
+
 </mapper>

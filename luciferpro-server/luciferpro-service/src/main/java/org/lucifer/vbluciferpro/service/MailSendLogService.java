@@ -22,4 +22,13 @@ public class MailSendLogService {
         return mailSendLogMapper.insert(mailSendLog);
     }
 
+    public List<MailSendLog> getMailSendLogsByStatus() {
+        return mailSendLogMapper.getMailSendLogsByStatus();
+    }
+
+    public Integer updateCount(String msgId, Date date) {
+        return mailSendLogMapper.updateCount(msgId,date);
+    }
+
+
 }
