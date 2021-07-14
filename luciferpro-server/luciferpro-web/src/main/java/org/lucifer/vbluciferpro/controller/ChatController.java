@@ -2,6 +2,8 @@ package org.lucifer.vbluciferpro.controller;
 
 import org.lucifer.vbluciferpro.model.Hr;
 import org.lucifer.vbluciferpro.service.HrService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,7 @@ public class ChatController {
     @Autowired
     HrService hrService;
 
+    public static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     @GetMapping("/hrs")
     public List<Hr> getAllHrs() {
