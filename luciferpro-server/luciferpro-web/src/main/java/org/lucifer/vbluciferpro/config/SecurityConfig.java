@@ -101,12 +101,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         );
         loginFilter.setAuthenticationManager(authenticationManagerBean());
         loginFilter.setFilterProcessesUrl("/doLogin");
+        //手动构建
         ConcurrentSessionControlAuthenticationStrategy sessionStrategy = new ConcurrentSessionControlAuthenticationStrategy(sessionRegistry());
+        //最多一个用户登录
         sessionStrategy.setMaximumSessions(1);
         loginFilter.setSessionAuthenticationStrategy(sessionStrategy);
         return loginFilter;
     }
 
+    //用来维护会话信息的
     @Bean
     SessionRegistryImpl sessionRegistry() {
         return new SessionRegistryImpl();

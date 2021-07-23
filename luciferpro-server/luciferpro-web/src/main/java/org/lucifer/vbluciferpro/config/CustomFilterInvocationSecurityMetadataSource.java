@@ -31,6 +31,7 @@ public class CustomFilterInvocationSecurityMetadataSource implements FilterInvoc
 
     @Override
     public Collection<ConfigAttribute> getAttributes(Object object) throws IllegalArgumentException {
+        //获取请求的地址
         String requestUrl = ((FilterInvocation) object).getRequestUrl();
         List<Menu> menus = menuService.getAllMenusWithRole();
         for (Menu menu : menus) {
@@ -45,6 +46,7 @@ public class CustomFilterInvocationSecurityMetadataSource implements FilterInvoc
                 return SecurityConfig.createList(str);
             }
         }
+        //没有匹配上的资源，都是登录访问
         return SecurityConfig.createList("ROLE_LOGIN");
     }
 

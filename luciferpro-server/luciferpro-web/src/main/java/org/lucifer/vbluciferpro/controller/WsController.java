@@ -14,6 +14,9 @@ import org.springframework.stereotype.Controller;
 import java.security.Principal;
 import java.util.Date;
 
+/**
+ * @author lucifer
+ */
 @Controller
 public class WsController {
     @Autowired

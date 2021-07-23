@@ -1,6 +1,8 @@
 package org.lucifer.vbluciferpro.model;
 
-public class Meta {
+import java.io.Serializable;
+
+public class Meta implements Serializable {
 
     private Boolean keepAlive;
 
