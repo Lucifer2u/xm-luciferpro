@@ -13,4 +13,7 @@ public class MailConstants {
     public static final String MAIL_QUEUE_NAME = "lucifer.mail.queue";
     public static final String MAIL_EXCHANGE_NAME = "lucifer.mail.exchange";
     public static final String MAIL_ROUTING_KEY_NAME = "lucifer.mail.routing.key";
+    public static final String DEAD_MAIL_QUEUE_NAME = "lucifer.mail.dead.queue";
+    public static final String DEAD_MAIL_EXCHANGE_NAME = "lucifer.mail.dead.exchange";
+    public static final String DEAD_MAIL_ROUTING_KEY_NAME = "lucifer.mail.dead.routing.key";
 }

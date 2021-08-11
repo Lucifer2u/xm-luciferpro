@@ -23,12 +23,9 @@ import java.util.List;
 
 @Component
 public class CustomFilterInvocationSecurityMetadataSource implements FilterInvocationSecurityMetadataSource {
-
     @Autowired
     MenuService menuService;
-
     AntPathMatcher antPathMatcher = new AntPathMatcher();
-
     @Override
     public Collection<ConfigAttribute> getAttributes(Object object) throws IllegalArgumentException {
         //获取请求的地址
@@ -42,7 +39,6 @@ public class CustomFilterInvocationSecurityMetadataSource implements FilterInvoc
                 for (int i = 0; i < roles.size(); i++) {
                     str[i] = roles.get(i).getName();
                 }
-
                 return SecurityConfig.createList(str);
             }
         }

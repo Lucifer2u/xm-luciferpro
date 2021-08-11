@@ -1,4 +1,4 @@
-package org.lucifer.vbluciferpro.config;
+package org.lucifer.mailserver.config;
 
 import org.lucifer.vbluciferpro.model.MailConstants;
 import org.lucifer.vbluciferpro.service.MailSendLogService;

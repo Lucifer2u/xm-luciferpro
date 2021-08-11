@@ -17,7 +17,9 @@ public class CustomUrlDecisionManager implements AccessDecisionManager {
     @Override
     public void decide(Authentication authentication, Object object, Collection<ConfigAttribute> configAttributes) throws AccessDeniedException, InsufficientAuthenticationException {
         for (ConfigAttribute configAttribute : configAttributes) {
+            //当前请求需要的权限
             String needRole = configAttribute.getAttribute();
+            //如果是匿名用户，抛异常
             if ("ROLE_LOGIN".equals(needRole)) {
                 if (authentication instanceof AnonymousAuthenticationToken){
                     throw new AccessDeniedException("尚未登录，请登录！");
@@ -25,6 +27,7 @@ public class CustomUrlDecisionManager implements AccessDecisionManager {
                     return;
                 }
             }
+            //当前用户所具有的权限
             Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
             for (GrantedAuthority authority : authorities) {
                 //需要的角色能被检测到

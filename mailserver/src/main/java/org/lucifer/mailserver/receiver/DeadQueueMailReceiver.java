@@ -1,15 +1,16 @@
 package org.lucifer.mailserver.receiver;
 
 import com.rabbitmq.client.Channel;
+
 import org.lucifer.vbluciferpro.model.Employee;
 import org.lucifer.vbluciferpro.model.MailConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mail.MailProperties;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -19,61 +20,73 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import javax.mail.MessagingException;
+import javax.annotation.Resource;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.util.Date;
 
+
+//监听死信队列中的消息
 @Component
-public class MailReceiver {
+public class DeadQueueMailReceiver {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MailReceiver.class);
 
-    public static final Logger logger = LoggerFactory.getLogger(MailReceiver.class);
+    @Resource
+    private JavaMailSender javaMailSender;
 
-    @Autowired
-    JavaMailSender javaMailSender;
-    @Autowired
-    MailProperties mailProperties;
-    @Autowired
-    TemplateEngine templateEngine;
-    @Autowired
-    StringRedisTemplate redisTemplate;
+    @Resource
+    private MailProperties mailProperties;
 
-    @RabbitListener(queues =  MailConstants.MAIL_QUEUE_NAME)
-    public void handler(Message message, Channel channel) throws IOException {
-        //利用redis完成消息消费
+    @Resource
+    private TemplateEngine templateEngine;
+
+    @Resource
+    private RedisTemplate redisTemplate;
+
+
+    @RabbitListener(queues = MailConstants.DEAD_MAIL_QUEUE_NAME)
+    public void handleDeadQueue(Message message, Channel channel) {
+        //获取员工类
         Employee employee = (Employee) message.getPayload();
         MessageHeaders headers = message.getHeaders();
-        Long tag = (Long) headers.get(AmqpHeaders.DELIVERY_TAG);
+        //获取消息序号
+        long tag = (long) headers.get(AmqpHeaders.DELIVERY_TAG);
+        //获取消息的msgId
         String msgId = (String) headers.get("spring_returned_message_correlation");
-        if (redisTemplate.opsForHash().entries("mail_log").containsKey(msgId)) {
-            //redis 中包含该 key，说明该消息已经被消费过
-            logger.info(msgId + ":消息已经被消费");
-            channel.basicAck(tag, false);//确认消息已消费
-            return;
-        }
-        //收到消息，发送邮件
-        MimeMessage msg = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(msg);
-
-
+        HashOperations hashOperations = redisTemplate.opsForHash();
         try {
-            helper.setTo(employee.getEmail());
-            helper.setFrom(mailProperties.getUsername());
-            helper.setSubject("入职欢迎!");
-            helper.setSentDate(new Date());
+            //判断redis中是否存在msgId，如果有，直接返回
+            if (hashOperations.entries("mail_log").containsKey(msgId)) {
+                LOGGER.error("死信队列中的消息已经被消费========>", msgId);
+                //手动确认消息
+                channel.basicAck(tag, false);
+                return;
+            }
+            MimeMessage msg = javaMailSender.createMimeMessage();
+            MimeMessageHelper messageHelper = new MimeMessageHelper(msg);
+            //设置发送人
+            messageHelper.setFrom(mailProperties.getUsername());
+            //设置收件人
+            messageHelper.setTo(employee.getEmail());
+            //设置发送主体
+            messageHelper.setSubject("入职欢迎邮件");
+            //设置发送日期
+            messageHelper.setSentDate(new Date());
+            //设置邮件内容
             Context context = new Context();
+            //如下参数对应mail.html中模板引擎的参数
             context.setVariable("name", employee.getName());
             context.setVariable("posName", employee.getPosition().getName());
             context.setVariable("joblevelName", employee.getJobLevel().getName());
             context.setVariable("departmentName", employee.getDepartment().getName());
-            //对应mail.html
             String mail = templateEngine.process("mail", context);
-            helper.setText(mail, true);
+            messageHelper.setText(mail, true); //参数1：邮件参数 参数2：是否是html邮件
+            //发送邮件
             javaMailSender.send(msg);
-            redisTemplate.opsForHash().put("mail_log", msgId, "lucifer");
-            //手动确认
+            LOGGER.info("邮件重发成功 ========>");
+            //邮件发送成功后，将msgId标识存入redis
+            hashOperations.put("mail_log", msgId, "ok");
             channel.basicAck(tag, false);
-            logger.info(msgId + ":邮件发送成功");
             /**
              * 手动确认消息，拒绝接收到的消息，退回到队列，也就是说如果消息的消费出现异常，会将消息退回到队列中
              * @tag 消息序号
@@ -85,13 +98,11 @@ public class MailReceiver {
                 channel.basicNack(tag, false, false);
             } catch (Exception exception) {
                 if (exception instanceof MailSendException){
-                    logger.error("未找到该邮箱============>" + e.getMessage());
+                    LOGGER.error("未找到该邮箱============>" + e.getMessage());
                 }
                 exception.printStackTrace();
             }
-            e.printStackTrace();
-            //发送失败，返回日志
-            logger.error("邮件发送失败：" + e.getMessage());
+            LOGGER.error("邮件第二次发送失败 ========>", e.getMessage());
         }
     }
 }
